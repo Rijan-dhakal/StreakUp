@@ -1,0 +1,76 @@
+import { User } from "../models/user.model.js";
+import { apiError } from "../utils/apiError.js";
+import jwt from "jsonwebtoken";
+
+export const signup = async (req, res, next) => {
+  const { email, password } = req?.body;
+
+  if (!email || !password)
+    return apiError("Email and Password are required", false, 400);
+
+  if (!/\S+@\S+\.\S+/.test(email)) {
+    return apiError("Please provide a valid email address", false, 400);
+  }
+
+  if (password.length < 6) {
+    return apiError("Password must be at least 6 characters long", false, 400);
+  }
+
+  try {
+    const existingUser = await User.findOne({email});
+
+    if(existingUser){
+      return apiError("Email is already registered", false, 400);
+    }
+
+    const user = await User.create({ email, password });
+
+    const token = jwt.sign({ id: user._id, email: user.email },process.env.JWT_SECRET,{ expiresIn: "7d" });
+
+    if(!token) return apiError("Token generation failed", false, 500);
+
+    res.status(201).json({
+      data: {
+        success: true,
+        message: "User create successfully",
+        email,
+      },
+      token,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const signin = async (req, res, next) => {
+    const { email, password } = req?.body;
+
+    if (!email || !password)
+      return apiError("Email and Password are required", false, 400);
+  
+    try {
+      const user = await User.findOne({ email });
+
+      if (!user) return apiError("Invalid email or password", false, 401);
+  
+      const isMatch = await user.comparePassword(password);
+
+      if (!isMatch)
+        return apiError("Invalid email or password", false, 401);
+  
+      const token = jwt.sign({ id: user._id, email: user.email },process.env.JWT_SECRET,{ expiresIn: "7d" });
+
+      if(!token) return apiError("Token generation failed", false, 500);
+  
+      res.status(200).json({
+        data: {
+          success: true,
+          message: "User signed in successfully",
+          email,
+        },
+        token,
+      });
+    } catch (error) {
+      next(error);
+    }
+};
