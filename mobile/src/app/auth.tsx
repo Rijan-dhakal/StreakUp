@@ -1,13 +1,36 @@
 import { useState } from "react";
 import { View, KeyboardAvoidingView, Platform, StyleSheet } from "react-native";
-import { Button, Text, TextInput } from "react-native-paper";
+import { Button, Text, TextInput, useTheme } from "react-native-paper";
+import { z } from "zod";
+
+const authSchema = z.object({
+  email: z.email("Invalid Email"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
 
 const AuthScreen = () => {
   const [isSignUp, setIsSignUp] = useState(false);
-  const [email, setEmail] = useState<string>("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  const handleAuthSwitchMode = function () {
+  const theme = useTheme()
+
+  const handleAuth = () => {
+    const result = authSchema.safeParse({ email, password });
+
+    if (!result.success) {
+      const error = result.error.issues[0]?.message;
+      setError(error);
+      return;
+    }
+
+    setError(null);
+    console.log("Validation passed:", result.data);
+
+  };
+
+  const handleAuthSwitchMode = () => {
     setIsSignUp((prev) => !prev);
   };
 
@@ -20,14 +43,12 @@ const AuthScreen = () => {
         <Text style={styles.title} variant="headlineMedium">
           {isSignUp ? "Create Account" : "Welcome Back"}
         </Text>
+
         <TextInput
           style={styles.input}
           value={email}
-          onChangeText={(text) => {
-            setEmail(text);
-            console.log(text);
-          }}
-          label="email"
+          onChangeText={setEmail}
+          label="Email"
           autoCapitalize="none"
           inputMode="email"
           placeholder="example@example.com"
@@ -36,21 +57,25 @@ const AuthScreen = () => {
         <TextInput
           style={styles.input}
           value={password}
-          onChangeText={(password) => {
-            setPassword(password);
-            console.log(password);
-          }}
+          onChangeText={setPassword}
+          inputMode="text"
           label="Password"
           autoCapitalize="none"
-          inputMode="text"
           secureTextEntry={true}
           placeholder="Enter password"
           mode="outlined"
         />
 
-        <Button style={styles.button} mode="contained">
-          {isSignUp ? "Sign Up" : "Sign in"}
+        {error ? (
+          <Text style={{ color: theme.colors.error, marginTop: 6 }}>{error}</Text>
+        ) : (
+          <Text style={{ marginTop: 6 }}>{""}</Text>
+        )}
+
+        <Button style={styles.button} mode="contained" onPress={handleAuth}>
+          {isSignUp ? "Sign Up" : "Sign In"}
         </Button>
+
         <Button
           style={styles.switchButton}
           mode="text"
