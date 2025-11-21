@@ -4,6 +4,8 @@ import { Button, Text, TextInput } from "react-native-paper";
 
 const AuthScreen = () => {
   const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState("");
 
   const handleAuthSwitchMode = function () {
     setIsSignUp((prev) => !prev);
@@ -20,6 +22,11 @@ const AuthScreen = () => {
         </Text>
         <TextInput
           style={styles.input}
+          value={email}
+          onChangeText={(text) => {
+            setEmail(text);
+            console.log(text);
+          }}
           label="email"
           autoCapitalize="none"
           inputMode="email"
@@ -28,6 +35,11 @@ const AuthScreen = () => {
         />
         <TextInput
           style={styles.input}
+          value={password}
+          onChangeText={(password) => {
+            setPassword(password);
+            console.log(password);
+          }}
           label="Password"
           autoCapitalize="none"
           inputMode="text"
@@ -39,7 +51,11 @@ const AuthScreen = () => {
         <Button style={styles.button} mode="contained">
           {isSignUp ? "Sign Up" : "Sign in"}
         </Button>
-        <Button style={styles.switchButton} mode="text" onPress={handleAuthSwitchMode}>
+        <Button
+          style={styles.switchButton}
+          mode="text"
+          onPress={handleAuthSwitchMode}
+        >
           {isSignUp
             ? "Already have an account? Sign in"
             : "New to the app? Sign up"}
@@ -69,9 +85,9 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 23,
   },
-  switchButton:{
-    marginTop: 10
-  }
+  switchButton: {
+    marginTop: 10,
+  },
 });
 
 export default AuthScreen;
