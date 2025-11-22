@@ -1,6 +1,7 @@
 import { User } from "../models/user.model.js";
 import { apiError } from "../utils/apiError.js";
 import jwt from "jsonwebtoken";
+import { generateJWT } from "../utils/generateJWT.js";
 
 export const signup = async (req, res, next) => {
   const { email, password } = req?.body;
@@ -25,7 +26,7 @@ export const signup = async (req, res, next) => {
 
     const user = await User.create({ email, password });
 
-    const token = jwt.sign({ id: user._id, email: user.email },process.env.JWT_SECRET,{ expiresIn: "7d" });
+    const token = generateJWT(user);
 
     if(!token) return apiError("Token generation failed", false, 500);
 
@@ -58,8 +59,7 @@ export const signin = async (req, res, next) => {
       if (!isMatch)
         return apiError("Invalid email or password", false, 401);
   
-      const token = jwt.sign({ id: user._id, email: user.email },process.env.JWT_SECRET,{ expiresIn: "7d" });
-
+      const token = generateJWT(user);
       if(!token) return apiError("Token generation failed", false, 500);
   
       res.status(200).json({
