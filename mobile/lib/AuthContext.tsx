@@ -1,10 +1,8 @@
-import { createContext, ReactNode } from "react";
-import { User } from "@/src/types/user";
+import { createContext, ReactNode, useContext } from "react";
 import { api } from "./api/axios";
 import { saveToken } from "@/src/utils/secureStore";
 
 type AuthContext = {
-  //   user: User | null;
   signUp: (email: string, password: string) => Promise<string | null>;
   signIn: (email: string, password: string) => Promise<string | null>;
 };
@@ -15,11 +13,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (email: string, password: string) => {
     try {
       const response = await api.post("/auth/signup", { email, password });
-      const { user, token } = response.data;
+      const { token } = response.data;
 
       await saveToken("jwt", token);
-
-      //navigate to dashboard
 
       return null;
     } catch (error) {
@@ -33,9 +29,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const response = api.post("/auth/signin", { email, password });
+      const response = await api.post("/auth/signin", { email, password });
+      const { token } = response.data;
 
-      // navigate to dashboard
+      await saveToken("jwt", token);
 
       return null;
     } catch (error) {
@@ -52,4 +49,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within AuthProvider");
+  }
+  return context;
 }

@@ -1,3 +1,5 @@
+import { useAuth } from "@/lib/AuthContext";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { View, KeyboardAvoidingView, Platform, StyleSheet } from "react-native";
 import { Button, Text, TextInput, useTheme } from "react-native-paper";
@@ -15,8 +17,12 @@ const AuthScreen = () => {
   const [error, setError] = useState<string | null>(null);
 
   const theme = useTheme()
+  const router = useRouter();
 
-  const handleAuth = () => {
+  const { signUp, signIn } = useAuth();
+
+
+  const handleAuth = async() => {
     const result = authSchema.safeParse({ email, password });
 
     if (!result.success) {
@@ -27,6 +33,16 @@ const AuthScreen = () => {
 
     setError(null);
     console.log("Validation passed:", result.data);
+
+    if (isSignUp) {
+     const error =  await signUp(email, password);
+     if(error) setError(error);
+    } else {
+      const error = await signIn(email, password);
+      if (error) setError(error);
+    }
+  
+      router.replace("/(tabs)")
 
   };
 

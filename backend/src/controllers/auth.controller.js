@@ -1,6 +1,5 @@
 import { User } from "../models/user.model.js";
 import { apiError } from "../utils/apiError.js";
-import jwt from "jsonwebtoken";
 import { generateJWT } from "../utils/generateJWT.js";
 
 export const signup = async (req, res, next) => {

@@ -2,7 +2,7 @@ import { getToken } from "@/src/utils/secureStore";
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: "http://localhost:5001/api",
+  baseURL: process.env.EXPO_PUBLIC_BASE_URL,
 });
 
 api.interceptors.request.use(async (config) => {
