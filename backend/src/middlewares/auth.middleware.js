@@ -7,7 +7,7 @@ export const authorize = async(req, res, next) => {
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return apiError("Authorization header missing", false, 401);
+      return apiError(res, "Authorization header missing", false, 401);
     }
 
     const token = authHeader.split(" ")[1];
@@ -15,19 +15,19 @@ export const authorize = async(req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     if (!decoded) {
-      return apiError("Invalid token", false, 401);
+      return apiError(res, "Invalid token", false, 401);
     }
 
     const user = await User.findById(decoded.id).select("-password");
 
     if (!user) {
-      return apiError("User not found", false, 404);
+      return apiError(res, "User not found", false, 404);
     }
 
     req.user = user;
     next();
 
   } catch (error) {
-    return apiError("Authentication failed", false, 401);
+    return apiError(res, "Authentication failed", false, 401);
   }
 };

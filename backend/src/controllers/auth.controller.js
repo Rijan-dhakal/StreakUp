@@ -6,34 +6,37 @@ export const signup = async (req, res, next) => {
   const { email, password } = req?.body;
 
   if (!email || !password)
-    return apiError("Email and Password are required", false, 400);
+    return apiError(res, "Email and Password are required", false, 400);
 
   if (!/\S+@\S+\.\S+/.test(email)) {
-    return apiError("Please provide a valid email address", false, 400);
+    return apiError(res, "Please provide a valid email address", false, 400);
   }
 
   if (password.length < 6) {
-    return apiError("Password must be at least 6 characters long", false, 400);
+    return apiError(res, "Password must be at least 6 characters long", false, 400);
   }
 
   try {
     const existingUser = await User.findOne({email});
 
     if(existingUser){
-      return apiError("Email is already registered", false, 400);
+      return apiError(res, "Email is already registered", false, 400);
     }
 
     const user = await User.create({ email, password });
 
     const token = generateJWT(user);
 
-    if(!token) return apiError("Token generation failed", false, 500);
+    if(!token) return apiError(res, "Token generation failed", false, 500);
 
     res.status(201).json({
       data: {
         success: true,
         message: "User create successfully",
-        email,
+         user: {
+            id: user._id,
+            email: user.email,
+          },
       },
       token,
     });
@@ -46,26 +49,29 @@ export const signin = async (req, res, next) => {
     const { email, password } = req?.body;
 
     if (!email || !password)
-      return apiError("Email and Password are required", false, 400);
+      return apiError(res, "Email and Password are required", false, 400);
   
     try {
       const user = await User.findOne({ email });
 
-      if (!user) return apiError("Invalid email or password", false, 401);
+      if (!user) return apiError(res, "Invalid email or password", false, 401);
   
       const isMatch = await user.comparePassword(password);
 
       if (!isMatch)
-        return apiError("Invalid email or password", false, 401);
+        return apiError(res, "Invalid email or password", false, 401);
   
       const token = generateJWT(user);
-      if(!token) return apiError("Token generation failed", false, 500);
+      if(!token) return apiError(res, "Token generation failed", false, 500);
   
       res.status(200).json({
         data: {
           success: true,
           message: "User signed in successfully",
-          email,
+          user: {
+            id: user._id,
+            email: user.email,
+          },
         },
         token,
       });

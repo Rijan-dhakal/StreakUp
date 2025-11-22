@@ -4,6 +4,7 @@ import cors from "cors";
 import { errorMiddleware } from "./middlewares/error.middleware.js";
 import { connectDB } from "./database/mongodb.js";
 import { authRouter } from "./routes/auth.route.js";
+import { validateRouter } from "./routes/validate.route.js";
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 connectDB();
 
 app.use("/api/auth", authRouter);
+app.use("/api/validate", validateRouter);
 
 app.use(errorMiddleware);
 

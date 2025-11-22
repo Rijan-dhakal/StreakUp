@@ -1,6 +1,3 @@
-export const apiError = function(msg, success ,statusCode = 500) {
-    const error = new Error(msg);
-    error.success = success;
-    error.statusCode = statusCode;
-    throw error;
-}
+export const apiError = (res, msg, success, statusCode = 500) => {
+  return res.status(statusCode).json({ success, message: msg });
+};
