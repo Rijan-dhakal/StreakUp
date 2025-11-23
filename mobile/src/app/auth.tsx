@@ -1,12 +1,12 @@
-import { useAuth } from "@/lib/AuthContext";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { View, KeyboardAvoidingView, Platform, StyleSheet } from "react-native";
-import { Button, Text, TextInput, useTheme } from "react-native-paper";
+import { ActivityIndicator, Button, Text, TextInput, useTheme } from "react-native-paper";
 import { z } from "zod";
+import { useAuth } from "../lib/AuthContext";
 
 const authSchema = z.object({
-  email: z.email("Invalid Email"),
+  email: z.email("Invalid Email"),  
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
@@ -15,14 +15,18 @@ const AuthScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [processing, setProcessing] = useState(false);
 
-  const theme = useTheme()
+  const theme = useTheme();
   const router = useRouter();
 
   const { signUp, signIn } = useAuth();
 
-
-  const handleAuth = async() => {
+  const handleAuth = async () => {
+    
+    setError(null);
+    
+    
     const result = authSchema.safeParse({ email, password });
 
     if (!result.success) {
@@ -31,33 +35,54 @@ const AuthScreen = () => {
       return;
     }
 
-    setError(null);
-    console.log("Validation passed:", result.data);
+    setProcessing(true);
 
-    if (isSignUp) {
-     const error =  await signUp(email, password);
-     if(error) setError(error);
-    } else {
-      const error = await signIn(email, password);
-      if (error) setError(error);
+    try {
+      let authError = null;
+
+      if (isSignUp) {
+        authError = await signUp(email, password);
+      } else {
+        authError = await signIn(email, password);
+      }
+
+      if (authError) {
+        setError(authError);
+        return;
+      }
+
+      
+      router.replace("/(tabs)");
+    } catch (err: any) {
+      
+      setError("An unexpected error occurred. Please try again.");
+      console.error("Auth error:", err);
+    } finally {
+      setProcessing(false);
     }
-  
-      router.replace("/(tabs)")
-
   };
 
   const handleAuthSwitchMode = () => {
     setIsSignUp((prev) => !prev);
+    setError(null); 
+    setEmail(""); 
+    setPassword(""); 
   };
+
+  const isFormValid = email.trim() && password.trim() && !processing;
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.container}
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
       <View style={styles.content}>
         <Text style={styles.title} variant="headlineMedium">
           {isSignUp ? "Create Account" : "Welcome Back"}
+        </Text>
+
+        <Text style={styles.subtitle} variant="bodyMedium">
+          {isSignUp ? "Sign up to get started" : "Sign in to your account"}
         </Text>
 
         <TextInput
@@ -66,10 +91,14 @@ const AuthScreen = () => {
           onChangeText={setEmail}
           label="Email"
           autoCapitalize="none"
+          autoComplete="email"
           inputMode="email"
           placeholder="example@example.com"
           mode="outlined"
+          disabled={processing}
+          left={<TextInput.Icon icon="email" />}
         />
+        
         <TextInput
           style={styles.input}
           value={password}
@@ -77,29 +106,46 @@ const AuthScreen = () => {
           inputMode="text"
           label="Password"
           autoCapitalize="none"
+          autoComplete={isSignUp ? "password-new" : "password"}
           secureTextEntry={true}
           placeholder="Enter password"
           mode="outlined"
+          disabled={processing}
+          left={<TextInput.Icon icon="lock" />}
         />
 
-        {error ? (
-          <Text style={{ color: theme.colors.error, marginTop: 6 }}>{error}</Text>
-        ) : (
-          <Text style={{ marginTop: 6 }}>{""}</Text>
+        {error && (
+          <View style={styles.errorContainer}>
+            <Text style={[styles.errorText, { color: theme.colors.error }]}>
+              {error}
+            </Text>
+          </View>
         )}
 
-        <Button style={styles.button} mode="contained" onPress={handleAuth}>
-          {isSignUp ? "Sign Up" : "Sign In"}
+        <Button 
+          style={styles.button} 
+          mode="contained" 
+          onPress={handleAuth}
+          disabled={!isFormValid || processing}
+          contentStyle={styles.buttonContent}
+        >
+          {processing ? (
+            <ActivityIndicator color={theme.colors.onPrimary} size="small" /> 
+          ) : (
+            isSignUp ? "Create Account" : "Sign In"
+          )}
         </Button>
 
         <Button
           style={styles.switchButton}
           mode="text"
           onPress={handleAuthSwitchMode}
+          disabled={processing}
+          compact
         >
           {isSignUp
             ? "Already have an account? Sign in"
-            : "New to the app? Sign up"}
+            : "Don't have an account? Sign up"}
         </Button>
       </View>
     </KeyboardAvoidingView>
@@ -109,25 +155,49 @@ const AuthScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
   },
   content: {
     flex: 1,
-    padding: 16,
+    padding: 24,
     justifyContent: "center",
+    maxWidth: 400,
+    width: "100%",
+    alignSelf: "center",
   },
   title: {
     textAlign: "center",
-    marginBlock: 20,
+    marginBottom: 8,
+    fontWeight: "bold",
+  },
+  subtitle: {
+    textAlign: "center",
+    marginBottom: 32,
+    opacity: 0.7,
   },
   input: {
-    marginBlock: 5,
+    marginBottom: 16,
   },
   button: {
-    marginTop: 23,
+    marginTop: 24,
+    borderRadius: 8,
+  },
+  buttonContent: {
+    paddingVertical: 8,
   },
   switchButton: {
-    marginTop: 10,
+    marginTop: 16,
+  },
+  errorContainer: {
+    backgroundColor: 'rgba(255, 0, 0, 0.1)',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 0, 0, 0.2)',
+  },
+  errorText: {
+    textAlign: "center",
+    fontSize: 14,
   },
 });
 

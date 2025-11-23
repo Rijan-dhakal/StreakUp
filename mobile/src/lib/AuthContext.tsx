@@ -32,9 +32,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        const response = await api.get<AuthResponse>("/auth/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        console.log("Loaded token:", token);
+        const response = await api.get<AuthResponse>("/auth/me");
 
         if (response.data.success) {
           setUser(response.data.user);
@@ -56,38 +55,70 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email,
         password,
       });
+      
       if (!response.data.success) {
-        return response.data.message;
+        return response.data.message || "Signup failed";
       }
+
       const { token, user } = response.data;
 
       await saveToken("jwt", token);
       setUser(user);
 
       return null;
-    } catch (error) {
-      if (error instanceof Error) {
-        return error.message;
+    } catch (error: any) {
+      console.log("Signup error:", error);
+
+      if (error.code === 'ERR_NETWORK' || !error.response) {
+        return "Unable to connect to server. Please check your connection.";
       }
 
-      return "An error occured during signup";
+      if (error.response?.status >= 400 && error.response?.status < 500) {
+        return error.response?.data?.message || "Invalid email or password";
+      }
+
+      if (error.response?.status >= 500) {
+        return "Server error. Please try again later.";
+      }
+
+      return "An unexpected error occurred during signup";
     }
   };
 
   const signIn = async (email: string, password: string) => {
     try {
-      const response = await api.post("/auth/signin", { email, password });
-      const { token } = response.data;
+      const response = await api.post<AuthResponse>("/auth/signin", { 
+        email, 
+        password 
+      });
 
-      await saveToken("jwt", token);
-
-      return null;
-    } catch (error) {
-      if (error instanceof Error) {
-        return error.message;
+      if (!response.data.success) {
+        return response.data.message || "Signin failed";
       }
 
-      return "An error occured during signup";
+      const { token, user } = response.data;
+
+      await saveToken("jwt", token);
+      setUser(user);
+
+      return null;
+
+    } catch (error: any) {
+      console.log("Signin error:", error);
+
+      if (error.code === 'ERR_NETWORK' || !error.response) {
+        return "Unable to connect to server. Please check your connection.";
+      }
+
+      if (error.response?.status >= 400 && error.response?.status < 500) {
+        return error.response?.data?.message || "Invalid email or password";
+      }
+
+      if (error.response?.status >= 500) {
+        return "Server error. Please try again later.";
+      }
+
+      return "An unexpected error occurred during signin";
     }
   };
 
