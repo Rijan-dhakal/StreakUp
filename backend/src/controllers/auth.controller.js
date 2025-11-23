@@ -30,16 +30,16 @@ export const signup = async (req, res, next) => {
     if(!token) return apiError(res, "Token generation failed", false, 500);
 
     res.status(201).json({
-      data: {
+
         success: true,
         message: "User create successfully",
          user: {
             id: user._id,
             email: user.email,
           },
+          token,
       },
-      token,
-    });
+    );
   } catch (error) {
     next(error);
   }
@@ -65,16 +65,15 @@ export const signin = async (req, res, next) => {
       if(!token) return apiError(res, "Token generation failed", false, 500);
   
       res.status(200).json({
-        data: {
           success: true,
           message: "User signed in successfully",
           user: {
             id: user._id,
             email: user.email,
           },
+          token,
         },
-        token,
-      });
+      );
     } catch (error) {
       next(error);
     }
