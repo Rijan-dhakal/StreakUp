@@ -32,15 +32,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        console.log("Loaded token:", token);
-        const response = await api.get<AuthResponse>("/auth/me");
+        const response = await api.get<AuthResponse>("/validate/user");
 
-        if (response.data.success) {
+        if (response.data.success && response.data.user) {
           setUser(response.data.user);
         } else {
           await removeToken("jwt");
         }
-      } catch (error) {
+      } catch (error:  any) {
         await removeToken("jwt");
       } finally {
         setLoading(false);
@@ -67,7 +66,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       return null;
     } catch (error: any) {
-      console.log("Signup error:", error);
 
       if (error.code === 'ERR_NETWORK' || !error.response) {
         return "Unable to connect to server. Please check your connection.";
@@ -104,7 +102,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return null;
 
     } catch (error: any) {
-      console.log("Signin error:", error);
 
       if (error.code === 'ERR_NETWORK' || !error.response) {
         return "Unable to connect to server. Please check your connection.";

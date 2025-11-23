@@ -6,6 +6,8 @@ import { View, ActivityIndicator } from "react-native";
 export default function Index() {
   const { user, loading } = useAuth();
 
+  console.log("Index - loading:", loading, "user:", user);
+
   if (loading) {
     return (
       <View
