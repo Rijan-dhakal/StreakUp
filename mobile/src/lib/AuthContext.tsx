@@ -8,12 +8,14 @@ import {
 import { api } from "./api/axios";
 import { getToken, removeToken, saveToken } from "@/src/utils/secureStore";
 import { AuthResponse, User } from "../types/auth";
+import { router } from "expo-router";
 
 type AuthContext = {
   user: User | null;
   loading: boolean;
   signUp: (email: string, password: string) => Promise<string | null>;
   signIn: (email: string, password: string) => Promise<string | null>;
+  logout: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContext | undefined>(undefined);
@@ -119,8 +121,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const logout = async () => {
+    await removeToken("jwt");
+    setUser(null);
+    router.replace("/auth");
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, signUp, signIn }}>
+    <AuthContext.Provider value={{ user, loading, signUp, signIn, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,7 +1,12 @@
+import { useAuth } from "@/src/lib/AuthContext";
 import { Link } from "expo-router";
-import {  View } from "react-native";
+import {  TouchableOpacity, View } from "react-native";
+import { Text } from "react-native-paper";
 
 export default function Index() {
+
+  const {logout} = useAuth();
+
   return (
     <View
       style={{
@@ -11,6 +16,7 @@ export default function Index() {
       }}
     >
       <Link href={"/auth"}>Auth Page</Link>
+      <TouchableOpacity onPress={logout}><Text>Logout</Text></TouchableOpacity>
     </View>
   );
 }
