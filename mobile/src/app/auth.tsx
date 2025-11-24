@@ -6,10 +6,10 @@ import { z } from "zod";
 import { useAuth } from "../lib/AuthContext";
 
 const authSchema = z.object({
-  email: z.email("Invalid Email"),  
+  email: z.email("Enter a valid email address"),  
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
-
+ 
 const AuthScreen = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
