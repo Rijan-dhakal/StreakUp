@@ -5,6 +5,7 @@ import { errorMiddleware } from "./middlewares/error.middleware.js";
 import { connectDB } from "./database/mongodb.js";
 import { authRouter } from "./routes/auth.route.js";
 import { validateRouter } from "./routes/validate.route.js";
+import { habitRouter } from "./routes/habit.route.js";
 
 dotenv.config();
 
@@ -19,6 +20,8 @@ connectDB();
 
 app.use("/api/auth", authRouter);
 app.use("/api/validate", validateRouter);
+
+app.use("/api/habit", habitRouter);
 
 app.use(errorMiddleware);
 
