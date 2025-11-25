@@ -1,5 +1,6 @@
 import { api } from "@/src/lib/api/axios";
 import { useAuth } from "@/src/lib/AuthContext";
+import { router } from "expo-router";
 import { useState } from "react";
 import { View, StyleSheet } from "react-native";
 import {
@@ -56,7 +57,8 @@ const addHabitScreen = () => {
 
       setTimeout(() => {
         setSuccess("");
-      }, 3000);
+        router.back();
+      }, 1000);
 
       // handle errors in catch block
     } catch (error: any) {

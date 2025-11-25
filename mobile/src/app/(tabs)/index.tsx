@@ -1,11 +1,29 @@
-import { useAuth } from "@/src/lib/AuthContext";
-import { Link } from "expo-router";
+import { api } from "@/src/lib/api/axios";
+import { GetHabitsResponse, Habit } from "@/src/types/habits";
+import { useState } from "react";
 import {  TouchableOpacity, View } from "react-native";
 import { Text } from "react-native-paper";
 
 export default function Index() {
+  const [habits, setHabits] = useState<Habit[]>()
 
-  const {logout} = useAuth();
+  const fetchHabits = async () => {
+    try {
+      const response = await api.get<GetHabitsResponse>("/habit/get-habits");
+      const { success, data} = response.data;
+      
+      if(!success){
+        console.log("Failed to fetch habits");
+        return;
+      }
+
+      setHabits(data);
+      console.log("Habits fetched successfully:", data);
+
+    } catch (error) {
+      console.log("Error fetching habits:", error);
+    }
+  }
 
   return (
     <View
@@ -15,8 +33,7 @@ export default function Index() {
         alignItems: "center",
       }}
     >
-      <Link href={"/auth"}>Auth Page</Link>
-      <TouchableOpacity onPress={logout}><Text>Logout</Text></TouchableOpacity>
+      <TouchableOpacity onPress={fetchHabits}><Text>Fetch Habits</Text></TouchableOpacity>
     </View>
   );
 }

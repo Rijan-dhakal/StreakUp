@@ -8,8 +8,6 @@ export const addHabit = async (req, res, next) => {
     return apiError(res, "All fields are required", false, 400);
   }
 
-  console.log("User ID from auth middleware:", req.user._id);
-
   try {
     await Habit.create({
       title,
@@ -26,3 +24,22 @@ export const addHabit = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getHabits = async (req, res, next) => {
+  try {
+    const userId = req?.user?.id;
+    if(!userId){
+      return apiError(res, "User not authenticated", false, 401);
+    }
+
+    const habits = await Habit.find({userId}).select("-updatedAt");
+
+    return res.status(200).json({
+      success: true,
+      data: habits,
+    });
+
+  } catch (error) {
+    next(error);
+  }
+}
