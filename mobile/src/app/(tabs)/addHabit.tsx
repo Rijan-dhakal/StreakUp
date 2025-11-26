@@ -57,7 +57,7 @@ const addHabitScreen = () => {
 
       setTimeout(() => {
         setSuccess("");
-        router.back();
+        router.push(`/?refresh=${Date.now()}`);
       }, 1000);
 
       // handle errors in catch block

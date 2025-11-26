@@ -3,18 +3,18 @@ import { useAuth } from "@/src/lib/AuthContext";
 import { GetHabitsResponse, Habit } from "@/src/types/habits";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useEffect, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import { Surface, Text } from "react-native-paper";
+import { useLocalSearchParams } from "expo-router";
+import { useCallback } from "react";
 
 export default function Index() {
   const [habits, setHabits] = useState<Habit[]>();
+
+  const { refresh } = useLocalSearchParams();
   const { user } = useAuth();
 
-  useEffect(() => {
-    fetchHabits();
-  }, [user, habits]);
-
-  const fetchHabits = async () => {
+  const fetchHabits = useCallback(async () => {
     try {
       const response = await api.get<GetHabitsResponse>("/habit/get-habits");
       const { success, data } = response.data;
@@ -28,58 +28,68 @@ export default function Index() {
     } catch (error) {
       console.log("Error fetching habits:", error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (user) fetchHabits();
+  }, [user, refresh, fetchHabits]);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text variant="headlineSmall" style={styles.title}>
-          Today's Habits
-        </Text>
-      </View>
-
-      {habits === undefined ? (
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyStateText}>Loading...</Text>
-        </View>
-      ) : habits.length === 0 ? (
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyStateText}>
-            No habits found. Start by creating one!
+    <ScrollView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text variant="headlineSmall" style={styles.title}>
+            Today's Habits
           </Text>
         </View>
-      ) : (
-        habits.map((habit) => (
-          <Surface key={habit._id.toString()} style={styles.card} elevation={0}>
-            <View style={styles.cardContent}>
-              <Text style={styles.cardTitle}>{habit.title}</Text>
-              <Text style={styles.cardDescription}>{habit.description}</Text>
 
-              <View style={styles.cardFooter}>
-                <View style={styles.streakContainer}>
-                  <MaterialCommunityIcons
-                    name="fire"
-                    size={18}
-                    color="#ff9800"
-                  />
-                  <Text style={styles.streakText}>
-                    {habit.streakCount} day
-                    {habit.streakCount > 1 ? "s" : ""} streak
-                  </Text>
-                </View>
+        {habits === undefined ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateText}>Loading...</Text>
+          </View>
+        ) : habits.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateText}>
+              No habits found. Start by creating one!
+            </Text>
+          </View>
+        ) : (
+          habits.map((habit) => (
+            <Surface
+              key={habit._id.toString()}
+              style={styles.card}
+              elevation={0}
+            >
+              <View style={styles.cardContent}>
+                <Text style={styles.cardTitle}>{habit.title}</Text>
+                <Text style={styles.cardDescription}>{habit.description}</Text>
 
-                <View style={styles.frequencyContainer}>
-                  <Text style={styles.frequencyText}>
-                    {habit.frequency.charAt(0).toUpperCase() +
-                      habit.frequency.slice(1)}
-                  </Text>
+                <View style={styles.cardFooter}>
+                  <View style={styles.streakContainer}>
+                    <MaterialCommunityIcons
+                      name="fire"
+                      size={18}
+                      color="#ff9800"
+                    />
+                    <Text style={styles.streakText}>
+                      {habit.streakCount} day
+                      {habit.streakCount > 1 ? "s" : ""} streak
+                    </Text>
+                  </View>
+
+                  <View style={styles.frequencyContainer}>
+                    <Text style={styles.frequencyText}>
+                      {habit.frequency.charAt(0).toUpperCase() +
+                        habit.frequency.slice(1)}
+                    </Text>
+                  </View>
                 </View>
               </View>
-            </View>
-          </Surface>
-        ))
-      )}
-    </View>
+            </Surface>
+          ))
+        )}
+      </View>
+    </ScrollView>
   );
 }
 
@@ -99,7 +109,10 @@ const styles = StyleSheet.create({
     marginBottom: 18,
     borderRadius: 18,
     backgroundColor: "#e9ecf1ff",
-    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
     elevation: 4,
   },
   cardContent: {
