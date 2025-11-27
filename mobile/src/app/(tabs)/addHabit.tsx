@@ -41,8 +41,6 @@ const addHabitScreen = () => {
         frequency,
       });
 
-      console.log("Habit created successfully:", response.data);
-
       if (!response.data.success) {
         setError(response.data.message || "Failed to create habit");
         return;
@@ -58,7 +56,7 @@ const addHabitScreen = () => {
       setTimeout(() => {
         setSuccess("");
         router.push(`/?refresh=${Date.now()}`);
-      }, 1000);
+      }, 500);
 
       // handle errors in catch block
     } catch (error: any) {
