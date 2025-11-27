@@ -2,9 +2,11 @@ import { Stack } from "expo-router";
 import { AuthProvider } from "../lib/AuthContext";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { PaperProvider } from "react-native-paper";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export default function RootLayout() {
   return (
+   <GestureHandlerRootView style={{ flex: 1 }}>
     <SafeAreaProvider>
       <PaperProvider>
         <AuthProvider>
@@ -17,5 +19,6 @@ export default function RootLayout() {
         </AuthProvider>
       </PaperProvider>
     </SafeAreaProvider>
+     </GestureHandlerRootView>
   );
 }

@@ -2,14 +2,17 @@ import { api } from "@/src/lib/api/axios";
 import { useAuth } from "@/src/lib/AuthContext";
 import { GetHabitsResponse, Habit } from "@/src/types/habits";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { Surface, Text } from "react-native-paper";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback } from "react";
+import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
+import type { SwipeableMethods } from "react-native-gesture-handler/ReanimatedSwipeable";
 
 export default function Index() {
   const [habits, setHabits] = useState<Habit[]>();
+  const swipableRef = useRef<SwipeableMethods | null>(null);
 
   const { refresh } = useLocalSearchParams();
   const { user } = useAuth();
@@ -34,8 +37,28 @@ export default function Index() {
     if (user) fetchHabits();
   }, [user, refresh, fetchHabits]);
 
+  const renderLeftActions = () => (
+    <View style={styles.swipeActionLeft}>
+      <MaterialCommunityIcons
+        name="trash-can-outline"
+        size={32}
+        color="#fff"
+      />
+    </View>
+  );
+
+  const renderRightActions = () => (
+    <View style={styles.swipeActionRight}>
+      <MaterialCommunityIcons
+        name="check-circle-outline"
+        size={32}
+        color="#fff"
+      />
+    </View>
+  );
+
   return (
-    <ScrollView style={{ flex: 1 }}>
+    <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
       <View style={styles.container}>
         <View style={styles.header}>
           <Text variant="headlineSmall" style={styles.title}>
@@ -55,37 +78,44 @@ export default function Index() {
           </View>
         ) : (
           habits.map((habit) => (
-            <Surface
+            <Swipeable
+              ref={swipableRef}
               key={habit._id.toString()}
-              style={styles.card}
-              elevation={0}
+              overshootLeft={false}
+              overshootRight={false}
+              renderLeftActions={renderLeftActions}
+              renderRightActions={renderRightActions}
             >
-              <View style={styles.cardContent}>
-                <Text style={styles.cardTitle}>{habit.title}</Text>
-                <Text style={styles.cardDescription}>{habit.description}</Text>
+              <Surface style={styles.card} elevation={0}>
+                <View style={styles.cardContent}>
+                  <Text style={styles.cardTitle}>{habit.title}</Text>
+                  <Text style={styles.cardDescription}>
+                    {habit.description}
+                  </Text>
 
-                <View style={styles.cardFooter}>
-                  <View style={styles.streakContainer}>
-                    <MaterialCommunityIcons
-                      name="fire"
-                      size={18}
-                      color="#ff9800"
-                    />
-                    <Text style={styles.streakText}>
-                      {habit.streakCount} day
-                      {habit.streakCount > 1 ? "s" : ""} streak
-                    </Text>
-                  </View>
+                  <View style={styles.cardFooter}>
+                    <View style={styles.streakContainer}>
+                      <MaterialCommunityIcons
+                        name="fire"
+                        size={18}
+                        color="#ff9800"
+                      />
+                      <Text style={styles.streakText}>
+                        {habit.streakCount} day
+                        {habit.streakCount > 1 ? "s" : ""} streak
+                      </Text>
+                    </View>
 
-                  <View style={styles.frequencyContainer}>
-                    <Text style={styles.frequencyText}>
-                      {habit.frequency.charAt(0).toUpperCase() +
-                        habit.frequency.slice(1)}
-                    </Text>
+                    <View style={styles.frequencyContainer}>
+                      <Text style={styles.frequencyText}>
+                        {habit.frequency.charAt(0).toUpperCase() +
+                          habit.frequency.slice(1)}
+                      </Text>
+                    </View>
                   </View>
                 </View>
-              </View>
-            </Surface>
+              </Surface>
+            </Swipeable>
           ))
         )}
       </View>
@@ -167,5 +197,26 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     color: "#666",
+  },
+
+  swipeActionRight:{
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "flex-start",
+    backgroundColor:"#e53935",
+    borderRadius: 18,
+    marginBottom: 18,
+    marginTop:2,
+    paddingRight: 16
+  },
+  swipeActionLeft:{
+     flex: 1,
+    justifyContent: "center",
+    alignItems: "flex-end",
+    backgroundColor:"#4caf50",
+    borderRadius: 18,
+    marginBottom: 18,
+    marginTop:2,
+    paddingLeft: 16
   },
 });
