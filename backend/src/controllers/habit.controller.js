@@ -20,7 +20,7 @@ export const addHabit = async (req, res, next) => {
       title,
       description,
       frequency,
-      userId: req.user._id,
+      userId: req.user.id,
     });
 
     return res.status(201).json({
@@ -39,7 +39,63 @@ export const getHabits = async (req, res, next) => {
       return apiError(res, "User not authenticated", false, 401);
     }
 
-    const habits = await Habit.find({ userId }).select("-updatedAt");
+    let habits = await Habit.find({ userId });
+
+    const today = startOfDay(new Date());
+    const bulkUpdates = [];
+
+    for (const habit of habits) {
+      if (!habit.lastCompleted) continue;
+
+      const last = startOfDay(new Date(habit.lastCompleted));
+      const dayDiff = differenceInCalendarDays(today, last);
+
+      let shouldReset = false;
+
+      // DAILY HABITS
+      if (habit.frequency === "daily") {
+        if (dayDiff > 1) {
+          shouldReset = true;
+        }
+      }
+
+      // WEEKLY HABITS
+      if (habit.frequency === "weekly") {
+        const weekDiff = differenceInCalendarWeeks(today, last, {
+          weekStartsOn: 0,
+        });
+
+        if (weekDiff > 1) {
+          shouldReset = true;
+        }
+      }
+
+      // MONTHLY HABITS
+      if (habit.frequency === "monthly") {
+        const missedMonth =
+          !isSameMonth(today, last) && !isSameMonth(today, addMonths(last, 1));
+
+        if (missedMonth) {
+          shouldReset = true;
+        }
+      }
+
+      if (shouldReset) {
+        bulkUpdates.push({
+          updateOne: {
+            filter: { _id: habit._id },
+            update: { $set: { streakCount: 0 } },
+          },
+        });
+      }
+    }
+
+    if (bulkUpdates.length > 0) {
+      await Habit.bulkWrite(bulkUpdates);
+    }
+
+    // fetch again after reset
+    habits = await Habit.find({ userId }).select("-updatedAt");
 
     return res.status(200).json({
       success: true,
