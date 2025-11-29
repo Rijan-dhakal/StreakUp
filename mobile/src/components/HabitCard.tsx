@@ -12,6 +12,7 @@ type Props = {
   onComplete: (id: string) => void;
   renderLeftActions: () => JSX.Element;
   renderRightActions: () => JSX.Element;
+  completed?: boolean;
 };
 
 export default function HabitCard({
@@ -20,6 +21,7 @@ export default function HabitCard({
   onComplete,
   renderLeftActions,
   renderRightActions,
+  completed,
 }: Props) {
   const swipeRef = useRef<SwipeableMethods | null>(null);
 
@@ -34,10 +36,15 @@ export default function HabitCard({
         if (direction === "right") onDelete(habit._id);
         if (direction === "left") onComplete(habit._id);
 
-        swipeRef.current?.close(); // close only this card
+        swipeRef.current?.close();
       }}
     >
-      <Surface style={styles.card} elevation={0}>
+      <Surface
+
+      // applying styles based on completed or not condition
+        style={[styles.card, completed ? styles.cardCompleted : {}]}
+        elevation={0}
+      >
         <View style={styles.cardContent}>
           <Text style={styles.cardTitle}>{habit.title}</Text>
           <Text style={styles.cardDescription}>{habit.description}</Text>
@@ -118,5 +125,8 @@ const styles = StyleSheet.create({
     color: "#7c48ff",
     fontWeight: "bold",
     fontSize: 16,
+  },
+  cardCompleted: {
+    opacity: 0.6  
   },
 });

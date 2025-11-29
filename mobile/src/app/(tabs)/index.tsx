@@ -13,7 +13,6 @@ import { useLocalSearchParams } from "expo-router";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import HabitCard from "@/src/components/HabitCard";
 
-
 export default function Index() {
   const [habits, setHabits] = useState<Habit[]>();
   const { refresh } = useLocalSearchParams();
@@ -62,6 +61,41 @@ export default function Index() {
     }
   };
 
+  const isHabitCompleted = (
+    lastCompleted: string | null,
+    frequency: "daily" | "weekly" | "monthly"
+  ): boolean => {
+    if (!lastCompleted) return false;
+
+    const today = new Date();
+    const lastCompletedDate = new Date(lastCompleted);
+
+    if (frequency === "daily") {
+      // Check if completed today
+      today.setHours(0, 0, 0, 0);
+      lastCompletedDate.setHours(0, 0, 0, 0);
+      return today.getTime() === lastCompletedDate.getTime();
+    }
+
+    if (frequency === "weekly") {
+      // Check if completed this week (week starts on Sunday/Monday)
+      const startOfWeek = new Date(today);
+      startOfWeek.setDate(today.getDate() - today.getDay()); // Sunday
+      startOfWeek.setHours(0, 0, 0, 0);
+      return lastCompletedDate >= startOfWeek;
+    }
+
+    if (frequency === "monthly") {
+      // Check if completed this month
+      return (
+        lastCompletedDate.getMonth() === today.getMonth() &&
+        lastCompletedDate.getFullYear() === today.getFullYear()
+      );
+    }
+
+    return false;
+  };
+
   // Action UI for swipe gestures
   const renderLeftActions = () => (
     <View style={styles.renderLeftActions}>
@@ -99,16 +133,24 @@ export default function Index() {
             </Text>
           </View>
         ) : (
-          habits.map((habit) => (
-            <HabitCard
-              key={habit._id}
-              habit={habit}
-              onDelete={handleDeleteHabit}
-              onComplete={handleCompletedHabit}
-              renderLeftActions={renderLeftActions}
-              renderRightActions={renderRightActions}
-            />
-          ))
+          habits.map((habit) => {
+            const completed = isHabitCompleted(
+              habit.lastCompleted,
+              habit.frequency
+            );
+
+            return (
+              <HabitCard
+                key={habit._id}
+                habit={habit}
+                onDelete={handleDeleteHabit}
+                onComplete={handleCompletedHabit}
+                renderLeftActions={renderLeftActions}
+                renderRightActions={renderRightActions}
+                completed={completed}
+              />
+            );
+          })
         )}
       </View>
     </ScrollView>
