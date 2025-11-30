@@ -55,7 +55,7 @@ const TabsLayout = () => {
         <Tabs.Screen
           name="streaks"
           options={{
-            title: "Streaks",
+            title: "Top Streaks",
             tabBarIcon: ({ color, size }) => (
               <MaterialCommunityIcons
                 name="chart-line"
