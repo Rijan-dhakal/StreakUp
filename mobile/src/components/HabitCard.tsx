@@ -2,7 +2,7 @@ import { JSX, useRef } from "react";
 import { StyleSheet, View } from "react-native";
 import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import type { SwipeableMethods } from "react-native-gesture-handler/ReanimatedSwipeable";
-import { Surface, Text } from "react-native-paper";
+import { Text } from "react-native-paper";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Habit } from "@/src/types/habits";
 
@@ -39,25 +39,40 @@ export default function HabitCard({
         swipeRef.current?.close();
       }}
     >
-      <Surface
-
-      // applying styles based on completed or not condition
-        style={[styles.card, completed ? styles.cardCompleted : {}]}
-        elevation={0}
-      >
+      <View style={[styles.card, completed ? styles.cardCompleted : {}]}>
         <View style={styles.cardContent}>
-          <Text style={styles.cardTitle}>{habit.title}</Text>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>{habit.title}</Text>
+            {completed && (
+              <MaterialCommunityIcons
+                name="check-circle"
+                size={24}
+                color="#10b981"
+              />
+            )}
+          </View>
           <Text style={styles.cardDescription}>{habit.description}</Text>
 
           <View style={styles.cardFooter}>
             <View style={styles.streakContainer}>
-              <MaterialCommunityIcons name="fire" size={18} color="#ff9800" />
+              <MaterialCommunityIcons name="fire" size={20} color="#f59e0b" />
               <Text style={styles.streakText}>
-                {habit.streakCount} day{habit.streakCount > 1 ? "s" : ""} streak
+                {habit.streakCount} day{habit.streakCount !== 1 ? "s" : ""}
               </Text>
             </View>
 
             <View style={styles.frequencyContainer}>
+              <MaterialCommunityIcons
+                name={
+                  habit.frequency === "daily"
+                    ? "calendar-today"
+                    : habit.frequency === "weekly"
+                    ? "calendar-week"
+                    : "calendar-month"
+                }
+                size={16}
+                color="#7c3aed"
+              />
               <Text style={styles.frequencyText}>
                 {habit.frequency.charAt(0).toUpperCase() +
                   habit.frequency.slice(1)}
@@ -65,36 +80,42 @@ export default function HabitCard({
             </View>
           </View>
         </View>
-      </Surface>
+      </View>
     </Swipeable>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    marginBottom: 18,
-    borderRadius: 18,
-    backgroundColor: "#e9ecf1ff",
+    marginBottom: 16,
+    borderRadius: 16,
+    backgroundColor: "#fff",
+    elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
   },
   cardContent: {
     padding: 20,
   },
-
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 4,
+  },
   cardTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 4,
-    color: "#22223b",
+    color: "#1e293b",
+    flex: 1,
   },
   cardDescription: {
-    fontSize: 15,
-    marginBottom: 20,
-    color: "#6c6c80",
+    fontSize: 14,
+    marginBottom: 16,
+    color: "#64748b",
+    lineHeight: 20,
   },
   cardFooter: {
     flexDirection: "row",
@@ -104,29 +125,32 @@ const styles = StyleSheet.create({
   streakContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff3e0",
+    backgroundColor: "#fef3c7",
     borderRadius: 12,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    gap: 6,
   },
   streakText: {
-    marginLeft: 6,
-    color: "#e28a05ff",
+    color: "#92400e",
     fontWeight: "bold",
-    fontSize: 16,
+    fontSize: 14,
   },
   frequencyContainer: {
-    backgroundColor: "#e9e3e3ff",
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#ddd6fe",
     borderRadius: 12,
-    paddingVertical: 4,
+    paddingVertical: 6,
     paddingHorizontal: 12,
+    gap: 4,
   },
   frequencyText: {
-    color: "#7c48ff",
-    fontWeight: "bold",
-    fontSize: 16,
+    color: "#5b21b6",
+    fontWeight: "600",
+    fontSize: 14,
   },
   cardCompleted: {
-    opacity: 0.6  
+    opacity: 0.65,
   },
 });

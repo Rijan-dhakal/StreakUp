@@ -72,6 +72,13 @@ const addHabitScreen = () => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Create New Habit</Text>
+        <Text style={styles.headerSubtitle}>
+          Build consistency one step at a time
+        </Text>
+      </View>
+
       <TextInput
         label="Title"
         mode="outlined"
@@ -110,8 +117,10 @@ const addHabitScreen = () => {
         mode="contained"
         onPress={handleSubmit}
         disabled={!title || !description || !frequency}
+        style={styles.button}
+        buttonColor="#7c3aed"
       >
-        Add Habit
+        Create Habit
       </Button>
 
       {error && (
@@ -136,40 +145,54 @@ const addHabitScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: "#f5f5f5",
+    padding: 20,
+    backgroundColor: "#f8f9fa",
   },
-
+  header: {
+    marginBottom: 28,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#1e293b",
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: "#64748b",
+    marginTop: 4,
+  },
   input: {
     marginBottom: 16,
+    backgroundColor: "#fff",
   },
-
   frequencyContainer: {
     marginBottom: 24,
   },
+  button: {
+    borderRadius: 12,
+    paddingVertical: 4,
+  },
   errorContainer: {
-    backgroundColor: "rgba(255, 0, 0, 0.1)",
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 20,
-    borderWidth: 1,
-    borderColor: "rgba(255, 0, 0, 0.2)",
+    backgroundColor: "#fee2e2",
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 16,
   },
   errorText: {
     textAlign: "center",
-    fontSize: 16,
+    fontSize: 14,
+    color: "#dc2626",
   },
   successContainer: {
-    backgroundColor: "rgba(0, 255, 0, 0.1)",
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 20,
-    borderWidth: 1,
-    borderColor: "rgba(0, 255, 0, 0.2)",
+    backgroundColor: "#d1fae5",
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 16,
   },
   successText: {
     textAlign: "center",
-    fontSize: 16,
+    fontSize: 14,
+    color: "#059669",
   },
 });
 

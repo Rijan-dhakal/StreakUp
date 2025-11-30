@@ -1,12 +1,8 @@
 import { api } from "@/src/lib/api/axios";
-import { useAuth } from "@/src/lib/AuthContext";
-import {
-  HabitOperationResponse,
-  GetHabitsResponse,
-  Habit,
-} from "@/src/types/habits";
+import { useHabits } from "@/src/lib/HabitsContext";
+import { HabitOperationResponse } from "@/src/types/habits";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect } from "react";
 import { Alert, ScrollView, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
 import { useLocalSearchParams } from "expo-router";
@@ -14,28 +10,12 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import HabitCard from "@/src/components/HabitCard";
 
 export default function Index() {
-  const [habits, setHabits] = useState<Habit[]>();
+  const { habits, fetchHabits } = useHabits();
   const { refresh } = useLocalSearchParams();
-  const { user } = useAuth();
-
-  const fetchHabits = useCallback(async () => {
-    try {
-      const response = await api.get<GetHabitsResponse>("/habit/get-habits");
-      const { success, data } = response.data;
-
-      if (!success) {
-        Alert.alert("Error", "Failed to fetch habits.");
-        return;
-      }
-      setHabits(data);
-    } catch (error: any) {
-      Alert.alert("Error", error.response?.data?.message || error.message);
-    }
-  }, []);
 
   useEffect(() => {
-    if (user) fetchHabits();
-  }, [user, refresh, fetchHabits]);
+    if (refresh) fetchHabits();
+  }, [refresh]);
 
   const handleDeleteHabit = async (id: string) => {
     try {
@@ -114,20 +94,27 @@ export default function Index() {
   );
 
   return (
-    <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+    <ScrollView style={{ flex: 1, backgroundColor: "#f8f9fa" }} showsVerticalScrollIndicator={false}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text variant="headlineSmall" style={styles.title}>
-            Today's Habits
+          <Text style={styles.title}>Today's Habits</Text>
+          <Text style={styles.subtitle}>
+            {new Date().toLocaleDateString("en-US", { 
+              weekday: "long", 
+              month: "long", 
+              day: "numeric" 
+            })}
           </Text>
         </View>
 
         {habits === undefined ? (
           <View style={styles.emptyState}>
+            <MaterialCommunityIcons name="loading" size={48} color="#7c3aed" />
             <Text style={styles.emptyStateText}>Loading...</Text>
           </View>
         ) : habits.length === 0 ? (
           <View style={styles.emptyState}>
+            <MaterialCommunityIcons name="calendar-check" size={64} color="#cbd5e1" />
             <Text style={styles.emptyStateText}>
               No habits found. Start by creating one!
             </Text>
@@ -160,42 +147,51 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: "#f5f5f5",
+    padding: 20,
+    backgroundColor: "#f8f9fa",
   },
   header: {
     marginBottom: 24,
   },
   title: {
+    fontSize: 28,
     fontWeight: "bold",
+    color: "#1e293b",
+  },
+  subtitle: {
+    fontSize: 14,
+    color: "#64748b",
+    marginTop: 4,
   },
   emptyState: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    paddingVertical: 60,
   },
   emptyStateText: {
-    color: "#666",
+    color: "#64748b",
+    fontSize: 16,
+    marginTop: 12,
   },
-
   renderLeftActions: {
     flex: 1,
     justifyContent: "center",
     alignItems: "flex-start",
-    backgroundColor: "#e53935",
-    borderRadius: 18,
-    marginBottom: 18,
+    backgroundColor: "#ef4444",
+    borderRadius: 16,
+    marginBottom: 16,
     marginTop: 2,
-    paddingLeft: 18,
+    paddingLeft: 20,
   },
   renderRightActions: {
     flex: 1,
     justifyContent: "center",
     alignItems: "flex-end",
-    backgroundColor: "#4caf50",
-    borderRadius: 18,
-    marginBottom: 18,
+    backgroundColor: "#10b981",
+    borderRadius: 16,
+    marginBottom: 16,
     marginTop: 2,
-    paddingRight: 18,
+    paddingRight: 20,
   },
 });

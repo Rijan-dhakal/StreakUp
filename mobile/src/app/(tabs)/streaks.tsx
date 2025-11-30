@@ -1,11 +1,11 @@
-import { View, Text } from 'react-native'
+import { View, Text } from "react-native";
 
-const streaksScreen = () => {
+const StreakScreen = () => {
   return (
     <View>
-      <Text>streaks</Text>
+      <Text>StreakScreen</Text>
     </View>
-  )
-}
+  );
+};
 
-export default streaksScreen
+export default StreakScreen;
